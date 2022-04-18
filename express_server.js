@@ -13,6 +13,12 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+app.get("/urls/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  const templateVars = {shortURL: shortURL, longURL: urlDatabase[shortURL]};
+  res.render("urls_show", templateVars);
+});
+
 app.get("/hello", (req, res) => {
   const templateVars = { greeting: 'Hello World!'};
   res.render("hello_world", templateVars);

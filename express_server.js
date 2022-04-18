@@ -40,12 +40,17 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+app.get('/u/:shortURL', (req, res) => {
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL];
+  res.redirect(`${longURL}`);
+})
+
 app.post("/urls", (req, res) => {
   let key = generateRandomString();
   let val = req.body.longURL;
   urlDatabase[key] = val;
-  console.log(urlDatabase)
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  res.redirect(`/urls/${key}`); 
 });
 
 app.listen(PORT, () => {

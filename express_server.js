@@ -15,7 +15,7 @@ const urlDatabase = { //Example 'database'
 };
 
 app.get("/", (req, res) => { //root page
-  res.send("Hello!");
+  res.redirect("/urls");
 });
 
 app.get("/hello", (req, res) => { //Test Page
@@ -74,7 +74,13 @@ app.post("/urls/:shortURL/delete", (req, res) => { //delete
 app.post("/login", (req, res) => {
   res.cookie('username', req.body.username);
   res.redirect('/urls')
-  console.log(req.body.username)
+
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie('username');
+  res.redirect('/urls')
+  
 });
 
 

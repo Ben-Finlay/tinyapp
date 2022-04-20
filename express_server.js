@@ -62,7 +62,8 @@ app.get("/urls/new", (req, res) => { //page to create a new URL link
 
 app.get("/urls/:shortURL", (req, res) => { //individual page for each created URL
   const shortURL = req.params.shortURL;
-  const templateVars = {shortURL: shortURL, longURL: urlDatabase[shortURL], user: users[req.cookies['user_id']]};
+  const longURL = urlDatabase[shortURL].longURL;
+  const templateVars = {shortURL: shortURL, longURL: longURL, user: users[req.cookies['user_id']]};
   res.render("urls_show", templateVars);
 });
 
@@ -107,8 +108,12 @@ app.post("/urls", (req, res) => { //add a new shortened URL
 app.post("/urls/:shortURL", (req, res) => { //update
   let key = req.params.shortURL;
   let val = req.body.longURL;
-  urlDatabase[key] = val;
-  res.redirect(`/urls/${key}`);
+  let user = req.cookies['user_id'];
+  urlDatabase[key] = {
+    longURL: val,
+    userID: user
+  }
+  res.redirect('/urls/');
 
 });
 

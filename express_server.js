@@ -12,14 +12,18 @@ app.set("view engine", "ejs");
 //project databases
 
 const urlDatabase = { //Example 'database'
-  // "b2xVn2": {
-  //         longURL: "http://www.lighthouselabs.ca",
-  //         userID: "test"
-  // },
-  // "9sm5xK": {
-  //         longURL: "http://www.google.com",
-  //         userID: "test"
-  // },
+  "b2xVn2": {
+          longURL: "http://www.lighthouselabs.ca",
+          userID: "test"
+  },
+  "9sm5xK": {
+          longURL: "http://www.google.com",
+          userID: "test"
+  },
+  "asdlkj1": {
+    longURL: "test.com",
+    userID: "someDude"
+  }
 };
 
 const users = {
@@ -36,19 +40,30 @@ const users = {
   "test": {
     id: "test",
     email: "test@test.com",
-    password: "test"
+    password: "test1"
   }
 };
 
 //project get requests
 
-app.get("/", (_req, res) => { //root page
-  res.redirect("/register");
+app.get("/", (req, res) => { //root page
+  if(!req.cookies['user_id']) {
+  return res.redirect("/register");
+  } else {
+  res.redirect("/urls");
+  }
 });
 
 app.get("/urls", (req, res) => { //list of URLS in our urlDatabase
-  const templateVars = {urls: urlDatabase, user: users[req.cookies['user_id']]};
+  const user = users[req.cookies['user_id']];
+  if (user) {
+  const userURL = userIDLookup(user.id)
+
+  const templateVars = {urls: userURL, user: user};
   res.render("urls_index", templateVars);
+  } else {
+    res.redirect("/login");
+  } 
 });
 
 app.get("/urls/new", (req, res) => { //page to create a new URL link
@@ -73,6 +88,7 @@ app.get("/urls.json", (_req, res) => { //JSON print out of the url database - co
 
 app.get('/u/:shortURL', (req, res) => { //redirect page
   const shortURL = req.params.shortURL;
+  console.log("abc")
   const longURL = urlDatabase[shortURL];
   res.redirect(`${longURL}`);
 });
@@ -85,6 +101,21 @@ app.get('/register', (req, res) => {
 app.get('/login', (req, res) => {
   const templateVars = {user: users[req.cookies['user_id']]};
   res.render("urls_login", templateVars);
+});
+///u/test
+app.get('/url/:id', (req, res) => {
+  const id = req.params.id;
+  console.log(id)
+
+  if (!id || !users[id]) {
+    return res.status(404).send("User ID does not exist.")
+
+  } else if (id === users[id].id) {
+    const userURL = userIDLookup(id) 
+    const templateVars = {urls: userURL, user: null || users[req.cookies['user_id']]};
+    res.render("urls_index", templateVars);
+  }
+
 });
 
 //TinyApp Post Requests - Links
@@ -109,9 +140,12 @@ app.post("/urls/:shortURL", (req, res) => { //update
   let key = req.params.shortURL;
   let val = req.body.longURL;
   let user = req.cookies['user_id'];
-  urlDatabase[key] = {
-    longURL: val,
-    userID: user
+
+  if (user === urlDatabase[key].userID) {
+    urlDatabase[key] = {
+      longURL: val,
+      userID: user
+    }
   }
   res.redirect('/urls/');
 
@@ -119,9 +153,12 @@ app.post("/urls/:shortURL", (req, res) => { //update
 
 app.post("/urls/:shortURL/delete", (req, res) => { //delete
   let shortURL = req.params.shortURL;
+  let user = req.cookies['user_id'];
+  if(user === urlDatabase[shortURL].userID) {
+
   delete urlDatabase[shortURL];
   res.redirect('/urls');
-
+}
 });
 
 //TinyApp POST Requests - User
@@ -139,7 +176,7 @@ app.post("/login", (req, res) => {
   }
   if (user.password === password) {
     res.cookie('user_id', user.id);
-    res.redirect('/urls');
+    return res.redirect('/urls');
   }  else {
     res.status(403).send("Password Incorrect");
   }
@@ -199,3 +236,18 @@ const emailLookup = function(eMail) { //
   }
   return false;
 };
+/**
+ * This function takes in a user id
+ * @param {*} uID 
+ * @returns 
+ */
+const userIDLookup = function (uID) {
+  let userURLS = {};
+  for (let url in urlDatabase) {
+    if (urlDatabase[url].userID === uID) {
+      userURLS[url] = urlDatabase[url];
+      
+    }
+  }
+  return userURLS;
+}

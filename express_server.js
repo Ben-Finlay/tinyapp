@@ -1,6 +1,9 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require('bcryptjs');
+
+
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -11,37 +14,37 @@ app.set("view engine", "ejs");
 
 //project databases
 
-const urlDatabase = { //Example 'database'
-  "b2xVn2": {
-          longURL: "http://www.lighthouselabs.ca",
-          userID: "test"
-  },
-  "9sm5xK": {
-          longURL: "http://www.google.com",
-          userID: "test"
-  },
-  "test11": {
-    longURL: "test.com",
-    userID: "someDude"
-  }
+const urlDatabase = { //Link Database
+  // "b2xVn2": {
+  //         longURL: "http://www.lighthouselabs.ca",
+  //         userID: "test"
+  // },
+  // "9sm5xK": {
+  //         longURL: "http://www.google.com",
+  //         userID: "test"
+  // },
+  // "test11": {
+  //   longURL: "test.com",
+  //   userID: "someDude"
+  // }
 };
 
-const users = {
-  "someDude": {
-    id: "someDude",
-    email: "somedude@tinyapp.com",
-    password: "youllneverguessthis"
-  },
-  "someCoolDude": {
-    id: "someCoolDude",
-    email: "cooldude@tinyapp.com",
-    password: "y0u11n3v3Rgu3557H15"
-  },
-  "test": {
-    id: "test",
-    email: "test@test.com",
-    password: "test1"
-  }
+const users = { //User Databse
+  // "someDude": {
+  //   id: "someDude",
+  //   email: "somedude@tinyapp.com",
+  //   password: "youllneverguessthis"
+  // },
+  // "someCoolDude": {
+  //   id: "someCoolDude",
+  //   email: "cooldude@tinyapp.com",
+  //   password: "y0u11n3v3Rgu3557H15"
+  // },
+  // "test": {
+  //   id: "test",
+  //   email: "test@test.com",
+  //   password: "test1"
+  // }
 };
 
 //project get requests
@@ -62,13 +65,13 @@ app.get("/urls", (req, res) => { //list of URLS in our urlDatabase
   const templateVars = {urls: userURL, user: user};
   res.render("urls_index", templateVars);
   } else {
-    res.redirect("/login");
+    res.status(403).send("<a href='/login'> No user logged in. </a>");
   } 
 });
 
 app.get("/urls/new", (req, res) => { //page to create a new URL link
   if (!req.cookies['user_id']) {
-    res.redirect("/login");
+    res.status(403).send("<a href='/login'> No user logged in. </a>");
   } else {
     const templateVars = {user: users[req.cookies['user_id']]};
     res.render("urls_new", templateVars);
@@ -89,7 +92,6 @@ app.get("/urls.json", (_req, res) => { //JSON print out of the url database - co
 app.get('/u/:shortURL', (req, res) => { //redirect page
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL].longURL;
-  console.log(longURL)
   res.redirect(longURL);
 });
 
@@ -102,21 +104,6 @@ app.get('/login', (req, res) => {
   const templateVars = {user: users[req.cookies['user_id']]};
   res.render("urls_login", templateVars);
 });
-///u/test
-// app.get('/url/:id', (req, res) => {
-//   const id = req.params.id;
-//   console.log(id)
-
-//   if (!id || !users[id]) {
-//     return res.status(404).send("User ID does not exist.")
-
-//   } else if (id === users[id].id) {
-//     const userURL = userIDLookup(id) 
-//     const templateVars = {urls: userURL, user: null || users[req.cookies['user_id']]};
-//     res.render("urls_index", templateVars);
-//   }
-
-// });
 
 //TinyApp Post Requests - Links
 
@@ -173,17 +160,17 @@ app.post("/login", (req, res) => {
   const password = req.body.userpassword;
   const user = emailLookup(email);
   if (!email || !password) {
-    return res.status(400).send("Please enter a valid email and password.");
+    return res.status(400).send("<a href='/login'>Please enter a valid email and password.</a>");
 
   }
   if (!emailLookup(email)) {
-    return res.status(403).send("Email not registered.");
+    return res.status(403).send("<a href='/login'>Email not registered.</a>");
   }
-  if (user.password === password) {
+  if (bcrypt.compareSync(password, user.password)) {
     res.cookie('user_id', user.id);
     return res.redirect('/urls');
   }  else {
-    res.status(403).send("Password Incorrect");
+    res.status(403).send("<a href='/login'>Password Incorrect</a>");
   }
 
 });
@@ -199,18 +186,19 @@ app.post("/logout", (_req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
   if (!email || !password) {
     return res.status(400).send("Please enter a valid email and password.");
     
   }
   if (emailLookup(email)) {
-    return res.status(400).send("Email already registered.");
+    return res.status(400).send("<h3>Email already registered.<h3> <a href='/register'>Return to Registration Page</a>");
   }
   
   const userID = generateRandomString();
   users[userID] = { id: userID,
     email: email,
-    password: password };
+    password: hashedPassword };
   res.cookie('user_id', userID);
   res.redirect('/urls');
 });

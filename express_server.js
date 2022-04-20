@@ -20,7 +20,7 @@ const urlDatabase = { //Example 'database'
           longURL: "http://www.google.com",
           userID: "test"
   },
-  "asdlkj1": {
+  "test11": {
     longURL: "test.com",
     userID: "someDude"
   }
@@ -88,9 +88,9 @@ app.get("/urls.json", (_req, res) => { //JSON print out of the url database - co
 
 app.get('/u/:shortURL', (req, res) => { //redirect page
   const shortURL = req.params.shortURL;
-  console.log("abc")
-  const longURL = urlDatabase[shortURL];
-  res.redirect(`${longURL}`);
+  const longURL = urlDatabase[shortURL].longURL;
+  console.log(longURL)
+  res.redirect(longURL);
 });
 
 app.get('/register', (req, res) => {
@@ -103,20 +103,20 @@ app.get('/login', (req, res) => {
   res.render("urls_login", templateVars);
 });
 ///u/test
-app.get('/url/:id', (req, res) => {
-  const id = req.params.id;
-  console.log(id)
+// app.get('/url/:id', (req, res) => {
+//   const id = req.params.id;
+//   console.log(id)
 
-  if (!id || !users[id]) {
-    return res.status(404).send("User ID does not exist.")
+//   if (!id || !users[id]) {
+//     return res.status(404).send("User ID does not exist.")
 
-  } else if (id === users[id].id) {
-    const userURL = userIDLookup(id) 
-    const templateVars = {urls: userURL, user: null || users[req.cookies['user_id']]};
-    res.render("urls_index", templateVars);
-  }
+//   } else if (id === users[id].id) {
+//     const userURL = userIDLookup(id) 
+//     const templateVars = {urls: userURL, user: null || users[req.cookies['user_id']]};
+//     res.render("urls_index", templateVars);
+//   }
 
-});
+// });
 
 //TinyApp Post Requests - Links
 
@@ -131,7 +131,7 @@ app.post("/urls", (req, res) => { //add a new shortened URL
       longURL: val,
       userID: user
     }
-    res.redirect(`/urls/${key}`);
+    res.redirect(`/urls/`);
   
   }
 });
@@ -146,8 +146,11 @@ app.post("/urls/:shortURL", (req, res) => { //update
       longURL: val,
       userID: user
     }
+    res.redirect('/urls/');
+  } else {
+    res.status(403).send("You can not edit another user's URLs.")
   }
-  res.redirect('/urls/');
+  
 
 });
 
@@ -158,6 +161,8 @@ app.post("/urls/:shortURL/delete", (req, res) => { //delete
 
   delete urlDatabase[shortURL];
   res.redirect('/urls');
+} else {
+  res.status(403).send("You can not delete another user's URLs.")
 }
 });
 
@@ -183,7 +188,7 @@ app.post("/login", (req, res) => {
 
 });
 
-app.post("/logout", (req, res) => {
+app.post("/logout", (_req, res) => {
   res.clearCookie('user_id');
   res.redirect('/urls');
   
@@ -238,8 +243,7 @@ const emailLookup = function(eMail) { //
 };
 /**
  * This function takes in a user id
- * @param {*} uID 
- * @returns 
+ * 
  */
 const userIDLookup = function (uID) {
   let userURLS = {};

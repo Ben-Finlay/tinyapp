@@ -114,7 +114,7 @@ app.post("/login", (req, res) => {
     return res.status(400).send("Please enter a valid email and password.")  
 
   }
-  if (emailDupe(email)) {
+  if (!emailLookup(email)) {
       return res.status(403).send("Email not registered.")  
   }
   if (user.password === password) {
@@ -170,19 +170,11 @@ function generateRandomString() {  //generator for new shortURL
 
 }
 
-const emailDupe = function(eMail) {
-  for (key in users) {
-    if(users[key].email === eMail) {
-      return false;
-    }
-  }
-  return true;
-}
-
-const emailLookup = function(eMail) {
+const emailLookup = function(eMail) { //
   for (key in users) {
     if (users[key].email === eMail) {
       return users[key]
     }
   }
+  return false;
 }

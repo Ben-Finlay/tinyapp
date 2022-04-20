@@ -27,6 +27,11 @@ const users = {
     id: "someCoolDude",
     email: "cooldude@tinyapp.com",
     password: "y0u11n3v3Rgu3557H15"
+  },
+  "test": {
+    id: "test",
+    email: "test@test.com",
+    password: "test"
   }
 }
 
@@ -36,10 +41,10 @@ app.get("/", (req, res) => { //root page
   res.redirect("/register");
 });
 
-app.get("/hello", (req, res) => { //Test Page
-  const templateVars = { greeting: 'Hello World!'};
-  res.render("hello_world", templateVars);
-});
+// app.get("/hello", (req, res) => { //Test Page
+//   const templateVars = { greeting: 'Hello World!'};
+//   res.render("hello_world", templateVars);
+// });
 
 app.get("/urls", (req, res) => { //list of URLS in our urlDatabase
   const templateVars = {urls: urlDatabase, user: users[req.cookies['user_id']]};
@@ -72,6 +77,11 @@ app.get('/register', (req, res) => {
   res.render("urls_register", templateVars)
 });
 
+app.get('/login', (req, res) => {
+  const templateVars = {user: users[req.cookies['user_id']]};
+  res.render("urls_login", templateVars)
+})
+
 //project post requests
 
 app.post("/urls", (req, res) => { //add a new shortened URL
@@ -97,8 +107,22 @@ app.post("/urls/:shortURL/delete", (req, res) => { //delete
 });
 
 app.post("/login", (req, res) => {
-  res.cookie('user_id', users.user_id);
-  res.redirect('/urls')
+  const email = req.body.useremail;
+  const password = req.body.userpassword;
+  const user = emailLookup(email);
+  if (!email || !password) {
+    return res.status(400).send("Please enter a valid email and password.")  
+
+  }
+  if (emailDupe(email)) {
+      return res.status(403).send("Email not registered.")  
+  }
+  if (user.password === password) {
+    res.cookie('user_id', user.id);
+    res.redirect('/urls');
+  }  else {
+    res.status(403).send("Password Incorrect")
+  }
 
 });
 
@@ -112,7 +136,6 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   if (!email || !password) {
-    console.log(users)  
     return res.status(400).send("Please enter a valid email and password.")  
     
   }
@@ -156,5 +179,10 @@ const emailDupe = function(eMail) {
   return true;
 }
 
-      // res.status(400);
-      // res.send("Email already registered.")
+const emailLookup = function(eMail) {
+  for (key in users) {
+    if (users[key].email === eMail) {
+      return users[key]
+    }
+  }
+}

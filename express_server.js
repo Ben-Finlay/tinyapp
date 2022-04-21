@@ -2,7 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require('bcryptjs');
-const { generateRandomString, emailLookup, userIDLookup } = require('./helpers')
+const { generateRandomString, emailLookup, userIDLookup } = require('./helpers');
 
 
 const app = express();
@@ -44,10 +44,10 @@ const users = { //User Database
 //project get requests
 
 app.get("/", (req, res) => { //root page
-  if(!req.session["userID"]) { 
-  return res.redirect("/login");
+  if (!req.session["userID"]) {
+    return res.redirect("/login");
   } else {
-  res.redirect("/urls");
+    res.redirect("/urls");
   }
 });
 
@@ -56,17 +56,17 @@ app.get("/urls", (req, res) => { //list of URLS in our urlDatabase
 
   
   if (user) {
-  const userURL = userIDLookup(user.id, urlDatabase)
+    const userURL = userIDLookup(user.id, urlDatabase);
 
-  const templateVars = {urls: userURL, user: user};
-  res.render("urls_index", templateVars);
+    const templateVars = {urls: userURL, user: user};
+    res.render("urls_index", templateVars);
   } else {
     res.status(403).send("<a href='/login'> No user logged in. </a>");
-  } 
+  }
 });
 
 app.get("/urls/new", (req, res) => { //page to create a new URL link
-  if (!req.session["userID"]) { 
+  if (!req.session["userID"]) {
     res.status(403).send("<a href='/login'> No user logged in. </a>");
   } else {
     const templateVars = {user: users[req.session["userID"]]};
@@ -76,21 +76,21 @@ app.get("/urls/new", (req, res) => { //page to create a new URL link
 
 app.get("/urls/:shortURL", (req, res) => { //individual page for each created URL
   const shortURL = req.params.shortURL;
-  const userID = req.session.userID;  
+  const userID = req.session.userID;
 
   if (!userID) {
-    res.status(403).send("<a href='/login'> You can not edit another user's URLs.</a>")
+    res.status(403).send("<a href='/login'> You can not edit another user's URLs.</a>");
   } else if (userID !== urlDatabase[shortURL].userID) {
-    res.status(403).send("<a href='/urls'> You can not edit another user's URLs.</a>")
+    res.status(403).send("<a href='/urls'> You can not edit another user's URLs.</a>");
   }
   
-  if(urlDatabase[shortURL]) {
-  const templateVars = {shortURL: shortURL, longURL: urlDatabase[shortURL].longURL, user: users[req.session["userID"]]};
-  res.render("urls_show", templateVars);
+  if (urlDatabase[shortURL]) {
+    const templateVars = {shortURL: shortURL, longURL: urlDatabase[shortURL].longURL, user: users[req.session["userID"]]};
+    res.render("urls_show", templateVars);
   } else if (!req.session["userID"]) {
-    res.status(404).send("<a href='/login'>URL not found.</a>")
+    res.status(404).send("<a href='/login'>URL not found.</a>");
   } else {
-    res.status(404).send("<a href='/urls'>URL not found.</a>")
+    res.status(404).send("<a href='/urls'>URL not found.</a>");
   }
 });
 
@@ -102,13 +102,13 @@ app.get('/u/:shortURL', (req, res) => { //redirect page
   const shortURL = req.params.shortURL;
   //res.redirect(urlDatabase[shortURL].longURL);
 
-  if(urlDatabase[shortURL]) {
+  if (urlDatabase[shortURL]) {
     //const templateVars = {shortURL: shortURL, longURL: urlDatabase[shortURL].longURL, user: users[req.session["userID"]]};
     res.redirect(urlDatabase[shortURL].longURL);
   } else if (!req.session["userID"]) {
-      res.status(404).send("<a href='/login'>URL not found.</a>")
+    res.status(404).send("<a href='/login'>URL not found.</a>");
   } else {
-      res.status(404).send("<a href='/urls'>URL not found.</a>")
+    res.status(404).send("<a href='/urls'>URL not found.</a>");
   }
 });
 
@@ -131,16 +131,16 @@ app.get('/login', (req, res) => {
 //TinyApp Post Requests - Links
 
 app.post("/urls", (req, res) => { //add a new shortened URL
-  if (!req.session["userID"]) { 
+  if (!req.session["userID"]) {
     res.status(403).send("Must be logged on to create new links.");
   } else {
     let key = generateRandomString();
     let val = req.body.longURL;
-    let user = req.session["userID"]; 
+    let user = req.session["userID"];
     urlDatabase[key] = {
       longURL: val,
       userID: user
-    }
+    };
     res.redirect(`/urls/${key}`);
   
   }
@@ -149,29 +149,29 @@ app.post("/urls", (req, res) => { //add a new shortened URL
 app.post("/urls/:shortURL", (req, res) => { //update
   let key = req.params.shortURL;
   let val = req.body.longURL;
-  let user = req.session["userID"]; 
+  let user = req.session["userID"];
 
   if (user === urlDatabase[key].userID) {
     urlDatabase[key] = {
       longURL: val,
       userID: user
-    }
+    };
     res.redirect('/urls/');
   } else {
-    res.status(403).send("You can not edit another user's URLs.")
+    res.status(403).send("You can not edit another user's URLs.");
   }
 
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => { //delete
   let shortURL = req.params.shortURL;
-  let user = req.session["userID"]; 
-  if(user === urlDatabase[shortURL].userID) {
-  delete urlDatabase[shortURL];
-  res.redirect('/urls');
-  } else {  
-  res.status(403).send("You can not delete another user's URLs.")
-}
+  let user = req.session["userID"];
+  if (user === urlDatabase[shortURL].userID) {
+    delete urlDatabase[shortURL];
+    res.redirect('/urls');
+  } else {
+    res.status(403).send("You can not delete another user's URLs.");
+  }
 });
 
 //TinyApp POST Requests - User

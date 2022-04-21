@@ -1,14 +1,19 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
 const bcrypt = require('bcryptjs');
+const { generateRandomString, emailLookup, userIDLookup } = require('./helpers')
 
 
 const app = express();
 const PORT = 8080; // default port 8080
 
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2'],
+}
+));
 
 app.set("view engine", "ejs");
 
@@ -50,7 +55,7 @@ const users = { //User Databse
 //project get requests
 
 app.get("/", (req, res) => { //root page
-  if(!req.cookies['user_id']) {
+  if(!req.session["userID"]) { 
   return res.redirect("/register");
   } else {
   res.redirect("/urls");
@@ -58,9 +63,9 @@ app.get("/", (req, res) => { //root page
 });
 
 app.get("/urls", (req, res) => { //list of URLS in our urlDatabase
-  const user = users[req.cookies['user_id']];
+  const user = users[req.session["userID"]];
   if (user) {
-  const userURL = userIDLookup(user.id)
+  const userURL = userIDLookup(user.id, urlDatabase)
 
   const templateVars = {urls: userURL, user: user};
   res.render("urls_index", templateVars);
@@ -70,10 +75,10 @@ app.get("/urls", (req, res) => { //list of URLS in our urlDatabase
 });
 
 app.get("/urls/new", (req, res) => { //page to create a new URL link
-  if (!req.cookies['user_id']) {
+  if (!req.session["userID"]) { 
     res.status(403).send("<a href='/login'> No user logged in. </a>");
   } else {
-    const templateVars = {user: users[req.cookies['user_id']]};
+    const templateVars = {user: users[req.session["userID"]]};
     res.render("urls_new", templateVars);
   }
 });
@@ -81,7 +86,7 @@ app.get("/urls/new", (req, res) => { //page to create a new URL link
 app.get("/urls/:shortURL", (req, res) => { //individual page for each created URL
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL].longURL;
-  const templateVars = {shortURL: shortURL, longURL: longURL, user: users[req.cookies['user_id']]};
+  const templateVars = {shortURL: shortURL, longURL: longURL, user: users[req.session["userID"]]};
   res.render("urls_show", templateVars);
 });
 
@@ -96,29 +101,29 @@ app.get('/u/:shortURL', (req, res) => { //redirect page
 });
 
 app.get('/register', (req, res) => {
-  const templateVars = {user: users[req.cookies['user_id']]};
+  const templateVars = {user: users[req.session["userID"]]};
   res.render("urls_register", templateVars);
 });
 
 app.get('/login', (req, res) => {
-  const templateVars = {user: users[req.cookies['user_id']]};
+  const templateVars = {user: users[req.session["userID"]]};
   res.render("urls_login", templateVars);
 });
 
 //TinyApp Post Requests - Links
 
 app.post("/urls", (req, res) => { //add a new shortened URL
-  if (!req.cookies['user_id']) {
+  if (!req.session["userID"]) { 
     res.status(403).send("Must be logged on to create new links.");
   } else {
     let key = generateRandomString();
     let val = req.body.longURL;
-    let user = req.cookies['user_id'];
+    let user = req.session["userID"]; 
     urlDatabase[key] = {
       longURL: val,
       userID: user
     }
-    res.redirect(`/urls/`);
+    res.redirect('/urls/');
   
   }
 });
@@ -126,7 +131,7 @@ app.post("/urls", (req, res) => { //add a new shortened URL
 app.post("/urls/:shortURL", (req, res) => { //update
   let key = req.params.shortURL;
   let val = req.body.longURL;
-  let user = req.cookies['user_id'];
+  let user = req.session["userID"]; 
 
   if (user === urlDatabase[key].userID) {
     urlDatabase[key] = {
@@ -143,7 +148,7 @@ app.post("/urls/:shortURL", (req, res) => { //update
 
 app.post("/urls/:shortURL/delete", (req, res) => { //delete
   let shortURL = req.params.shortURL;
-  let user = req.cookies['user_id'];
+  let user = req.session["userID"]; 
   if(user === urlDatabase[shortURL].userID) {
 
   delete urlDatabase[shortURL];
@@ -158,16 +163,16 @@ app.post("/urls/:shortURL/delete", (req, res) => { //delete
 app.post("/login", (req, res) => {
   const email = req.body.useremail;
   const password = req.body.userpassword;
-  const user = emailLookup(email);
+  const user = emailLookup(email, users);
   if (!email || !password) {
     return res.status(400).send("<a href='/login'>Please enter a valid email and password.</a>");
 
   }
-  if (!emailLookup(email)) {
+  if (!emailLookup(email, users)) {
     return res.status(403).send("<a href='/login'>Email not registered.</a>");
   }
   if (bcrypt.compareSync(password, user.password)) {
-    res.cookie('user_id', user.id);
+    req.session['userID'] = user.id;
     return res.redirect('/urls');
   }  else {
     res.status(403).send("<a href='/login'>Password Incorrect</a>");
@@ -175,9 +180,9 @@ app.post("/login", (req, res) => {
 
 });
 
-app.post("/logout", (_req, res) => {
-  res.clearCookie('user_id');
-  res.redirect('/urls');
+app.post("/logout", (req, res) => {
+  req.session = null;
+  res.redirect('/login');
   
 });
 
@@ -188,18 +193,18 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
   if (!email || !password) {
-    return res.status(400).send("Please enter a valid email and password.");
+    return res.status(400).send("<a href='/register'>Please enter a valid email and password.</a>");
     
   }
-  if (emailLookup(email)) {
-    return res.status(400).send("<h3>Email already registered.<h3> <a href='/register'>Return to Registration Page</a>");
+  if (emailLookup(email, users)) {
+    return res.status(400).send("<a href='/register'>Email already registered.</a>");
   }
   
   const userID = generateRandomString();
   users[userID] = { id: userID,
     email: email,
     password: hashedPassword };
-  res.cookie('user_id', userID);
+  req.session['userID'] = userID;
   res.redirect('/urls');
 });
 
@@ -211,35 +216,3 @@ app.listen(PORT, () => {
 
 //project functions
 
-const generateRandomString = function() {  //generator for new shortURL
-  let shortenedURL = '';
-  let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 6; i++) {
-    shortenedURL += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return shortenedURL;
-
-};
-
-const emailLookup = function(eMail) { //
-  for (let key in users) {
-    if (users[key].email === eMail) {
-      return users[key];
-    }
-  }
-  return false;
-};
-/**
- * This function takes in a user id
- * 
- */
-const userIDLookup = function (uID) {
-  let userURLS = {};
-  for (let url in urlDatabase) {
-    if (urlDatabase[url].userID === uID) {
-      userURLS[url] = urlDatabase[url];
-      
-    }
-  }
-  return userURLS;
-}

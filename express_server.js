@@ -213,6 +213,3 @@ app.post("/register", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Tiny App listening on port ${PORT}!`);
 });
-
-//project functions
-

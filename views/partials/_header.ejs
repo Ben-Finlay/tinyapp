@@ -1,8 +1,9 @@
 <header>
   <nav class="navbar navbar-expand-md navbar-dark bg-secondary">
-    
+
     <a class="navbar-brand" href="/">TinyApp</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+      aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
@@ -10,25 +11,28 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
 
-        
+
         <% if (user) { %>
-          
 
-          <form class=in-inline style="position: absolute; right: 2%"  method="POST" action="/logout">
+
+          <form class=in-inline style="position: absolute; right: 2%" method="POST" action="/logout">
             <button type="submit" class="btn btn-primary" style="float: right;">Logout</button>
-            <label style="text-align: text-center; padding-top: .3em; margin-right: 1em; font-size: 1.2em; color: whitesmoke"> Logged in As: <%= user.email %></label>
-          </form> 
-      
-        <% } else { %>
+            <label
+              style="text-align: text-center; padding-top: .3em; margin-right: 1em; font-size: 1.2em; color: whitesmoke">
+              Logged in As: <%= user.email %></label>
+          </form>
 
-          <a class="nav-item nav-link" href="/register">Register</a>
-          <form class="d-flex justify-content-center" style="position: absolute; right: 2%"  method="GET" action="/login">
-            <button type="submit" class="btn btn-primary" style="float: right;">Login</button>
-          </form>  
+          <% } else { %>
 
-          <% } %>
-     
-        </div>
+            <a class="nav-item nav-link" href="/register">Register</a>
+            <form class="d-flex justify-content-center" style="position: absolute; right: 2%" method="GET"
+              action="/login">
+              <button type="submit" class="btn btn-primary" style="float: right;">Login</button>
+            </form>
+
+            <% } %>
+
+      </div>
     </div>
   </nav>
-</header> 
+</header>

@@ -1,43 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>Register - TinyApp</title>
-  </head>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+    integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 
-  <body>
+  <title>Register - TinyApp</title>
+</head>
 
-    <%- include('partials/_header') %>
+<body>
 
-  <main style="margin: 1em;" class="align-items-center">
-    <p class="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">Register</p>
-    <form class="mx-1 mx-md-4 d-flex justify-content-center" action="/register" method="POST">
+  <%- include('partials/_header') %>
 
-      <div class="mb-4">
-        <div class="form-outline mb-0">
-          <label class="form-label">Your Email</label>
-          <input type="email" name="email" class="form-control" placeholder="Email"/>
+    <main style="margin: 1em;" class="align-items-center">
+      <p class="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">Register</p>
+      <form class="mx-1 mx-md-4 d-flex justify-content-center" action="/register" method="POST">
+
+        <div class="mb-4">
+          <div class="form-outline mb-0">
+            <label class="form-label">Your Email</label>
+            <input type="email" name="email" class="form-control" placeholder="Email" />
+          </div>
+
+          <div class="form-outline mb-0">
+            <label style="margin-top: 1em" class="form-label">Your Password</label>
+            <input type="password" name="password" class="form-control" placeholder="Password" />
+            <button type="submit" class="btn btn-primary" style="margin-top: 1em">Register</button>
+          </div>
         </div>
 
-        <div class="form-outline mb-0">
-          <label  style="margin-top: 1em"class="form-label">Your Password</label>
-          <input type="password" name="password" class="form-control" placeholder="Password"/>  
-          <button type="submit" class="btn btn-primary" style="margin-top: 1em">Register</button>
-        </div>
-      </div>
+      </form>
 
-    </form>
+    </main>
 
-  </main>
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+      crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+      crossorigin="anonymous"></script>
+</body>
 
-      <!-- Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-  </body>
 </html>

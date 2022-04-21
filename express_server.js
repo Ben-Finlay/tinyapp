@@ -9,46 +9,35 @@ const app = express();
 const PORT = 8080; // default port 8080
 
 app.use(bodyParser.urlencoded({extended: true}));
+
+const salt = bcrypt.genSaltSync(10);
+const key1 = bcrypt.genSaltSync(12); //using genSaltSync to generate our keys for the cookieSession
+const key2 = bcrypt.genSaltSync(12);
+
 app.use(cookieSession({
-  name: 'session',
-  keys: ['key1', 'key2'],
+  name: 'session',  //keys are long strings to increase security
+  keys: [key1, key2],
 }
 ));
 
 app.set("view engine", "ejs");
 
+
+
 //project databases
 
 const urlDatabase = { //Link Database
-  // "b2xVn2": {
-  //         longURL: "http://www.lighthouselabs.ca",
-  //         userID: "test"
-  // },
-  // "9sm5xK": {
-  //         longURL: "http://www.google.com",
-  //         userID: "test"
-  // },
-  // "test11": {
-  //   longURL: "test.com",
-  //   userID: "someDude"
+  // "random": {
+  //   longURL: "http://example.com",
+  //   userID: "example"
   // }
 };
 
-const users = { //User Databse
-  // "someDude": {
-  //   id: "someDude",
-  //   email: "somedude@tinyapp.com",
-  //   password: "youllneverguessthis"
-  // },
-  // "someCoolDude": {
-  //   id: "someCoolDude",
-  //   email: "cooldude@tinyapp.com",
-  //   password: "y0u11n3v3Rgu3557H15"
-  // },
-  // "test": {
-  //   id: "test",
-  //   email: "test@test.com",
-  //   password: "test1"
+const users = { //User Database
+  // "example": {
+  //   id: "example",
+  //   email: "example@test.com",
+  //   password: "3x4mpl3"
   // }
 };
 
@@ -56,7 +45,7 @@ const users = { //User Databse
 
 app.get("/", (req, res) => { //root page
   if(!req.session["userID"]) { 
-  return res.redirect("/register");
+  return res.redirect("/login");
   } else {
   res.redirect("/urls");
   }
@@ -85,9 +74,14 @@ app.get("/urls/new", (req, res) => { //page to create a new URL link
 
 app.get("/urls/:shortURL", (req, res) => { //individual page for each created URL
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL].longURL;
-  const templateVars = {shortURL: shortURL, longURL: longURL, user: users[req.session["userID"]]};
+  if(urlDatabase[shortURL]) {
+  const templateVars = {shortURL: shortURL, longURL: urlDatabase[shortURL].longURL, user: users[req.session["userID"]]};
   res.render("urls_show", templateVars);
+  } else if (!req.session["userID"]) {
+    res.status(404).send("<a href='/login'>URL not found.</a>")
+  } else {
+    res.status(404).send("<a href='/urls'>URL not found.</a>")
+  }
 });
 
 app.get("/urls.json", (_req, res) => { //JSON print out of the url database - could be called with APIs
@@ -96,16 +90,30 @@ app.get("/urls.json", (_req, res) => { //JSON print out of the url database - co
 
 app.get('/u/:shortURL', (req, res) => { //redirect page
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL].longURL;
-  res.redirect(longURL);
+  //res.redirect(urlDatabase[shortURL].longURL);
+
+  if(urlDatabase[shortURL]) {
+    //const templateVars = {shortURL: shortURL, longURL: urlDatabase[shortURL].longURL, user: users[req.session["userID"]]};
+    res.redirect(longURL);
+  } else if (!req.session["userID"]) {
+      res.status(404).send("<a href='/login'>URL not found.</a>")
+  } else {
+      res.status(404).send("<a href='/urls'>URL not found.</a>")
+  }
 });
 
 app.get('/register', (req, res) => {
+  if (req.session["userID"]) {
+    res.redirect('/urls');
+  }
   const templateVars = {user: users[req.session["userID"]]};
   res.render("urls_register", templateVars);
 });
 
 app.get('/login', (req, res) => {
+  if (req.session["userID"]) {
+    res.redirect('/urls');
+  }
   const templateVars = {user: users[req.session["userID"]]};
   res.render("urls_login", templateVars);
 });
@@ -182,7 +190,7 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   req.session = null;
-  res.redirect('/login');
+  res.redirect('/login'); //the project asks to redirect to /urls, but if no one is logged in this returns an error message from GET /urls.
   
 });
 
@@ -191,7 +199,7 @@ app.post("/logout", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const hashedPassword = bcrypt.hashSync(password, 10);
+  const hashedPassword = bcrypt.hashSync(password, salt);
   if (!email || !password) {
     return res.status(400).send("<a href='/register'>Please enter a valid email and password.</a>");
     

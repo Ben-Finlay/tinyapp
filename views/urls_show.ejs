@@ -15,11 +15,12 @@
       <div class="card-body">
         <h5 class="card-title">TinyURL for: <%= longURL %></h5>
         <p class="card-text">Short URL: <a href="<%= longURL %>"><%= shortURL %></a></p>
+        <p class ="card-test">Share link: localhost:8080/u/<%= shortURL %></p>
       <div class ="card-footer">
         <h2 class="card-title" style="color:dimgray">Edit</h2>
         <form class=in-inline method="POST" action="/urls/<%= shortURL %>">
           <label for="New URL" style="color:dimgray; font-size: 1.2em;">New URL:</label>
-          <input class="form-control" type="text" name="longURL" placeholder="<%= longURL %>" style="width: 300px; margin: 1.5em; display: inline-block;">
+          <input class="form-control" type="text" name="longURL" value="http://" style="width: 300px; margin: 1.5em; display: inline-block;">
           <button type="submit" class="btn btn-primary">Submit</button>
         </form>        
       </div>

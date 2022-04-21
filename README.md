@@ -6,13 +6,13 @@ It allows for users to create their own database of shortened URLs for regular u
 ### Final Product
 
 This image shows a database of shortened links for the logged in user.
-!["The user's database of shortened links"](https://i.imgur.com/BMCBC1V.png)
+!["The user's database of shortened links"](https://github.com/Ben-Finlay/tinyapp/blob/main/docs/user-database.png)
 
 This image shows the link creation page.
-!["Link creation page"](https://i.imgur.com/7ZyVAsn.png)
+!["Link creation page"](https://github.com/Ben-Finlay/tinyapp/blob/main/docs/link-creation.png)
 
 This image shows the links dedicated page with an optional link editor.
-!["A page to view link details and edit"](https://i.imgur.com/MZcloUg.png)
+!["A page to view link details and edit"](https://github.com/Ben-Finlay/tinyapp/blob/main/docs/link-page.png)
 
 
 

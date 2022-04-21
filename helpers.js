@@ -24,11 +24,10 @@ const userIDLookup = function (uID, dB) {
   let userURLS = {};
   for (let url in dB) {
     if (dB[url].userID === uID) {
-      userURLS[url] = dB[url];
-      
+      userURLS[url] = dB[url];     
     }
   }
   return userURLS;
 }
 
-module.exports = { generateRandomString, emailLookup, userIDLookup}
+module.exports = { generateRandomString, emailLookup, userIDLookup};

@@ -53,6 +53,8 @@ app.get("/", (req, res) => { //root page
 
 app.get("/urls", (req, res) => { //list of URLS in our urlDatabase
   const user = users[req.session["userID"]];
+
+  
   if (user) {
   const userURL = userIDLookup(user.id, urlDatabase)
 
@@ -74,6 +76,14 @@ app.get("/urls/new", (req, res) => { //page to create a new URL link
 
 app.get("/urls/:shortURL", (req, res) => { //individual page for each created URL
   const shortURL = req.params.shortURL;
+  const userID = req.session.userID;  
+
+  if (!userID) {
+    res.status(403).send("<a href='/login'> You can not edit another user's URLs.</a>")
+  } else if (userID !== urlDatabase[shortURL].userID) {
+    res.status(403).send("<a href='/urls'> You can not edit another user's URLs.</a>")
+  }
+  
   if(urlDatabase[shortURL]) {
   const templateVars = {shortURL: shortURL, longURL: urlDatabase[shortURL].longURL, user: users[req.session["userID"]]};
   res.render("urls_show", templateVars);
@@ -94,7 +104,7 @@ app.get('/u/:shortURL', (req, res) => { //redirect page
 
   if(urlDatabase[shortURL]) {
     //const templateVars = {shortURL: shortURL, longURL: urlDatabase[shortURL].longURL, user: users[req.session["userID"]]};
-    res.redirect(longURL);
+    res.redirect(urlDatabase[shortURL].longURL);
   } else if (!req.session["userID"]) {
       res.status(404).send("<a href='/login'>URL not found.</a>")
   } else {
@@ -131,7 +141,7 @@ app.post("/urls", (req, res) => { //add a new shortened URL
       longURL: val,
       userID: user
     }
-    res.redirect('/urls/');
+    res.redirect(`/urls/${key}`);
   
   }
 });
@@ -150,7 +160,6 @@ app.post("/urls/:shortURL", (req, res) => { //update
   } else {
     res.status(403).send("You can not edit another user's URLs.")
   }
-  
 
 });
 
@@ -158,10 +167,9 @@ app.post("/urls/:shortURL/delete", (req, res) => { //delete
   let shortURL = req.params.shortURL;
   let user = req.session["userID"]; 
   if(user === urlDatabase[shortURL].userID) {
-
   delete urlDatabase[shortURL];
   res.redirect('/urls');
-} else {
+  } else {  
   res.status(403).send("You can not delete another user's URLs.")
 }
 });
